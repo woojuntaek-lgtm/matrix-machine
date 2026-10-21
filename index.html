@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#151622">
+<title>행렬 변환 기계</title>
+<meta name="description" content="행렬은 공간을 통째로 움직이는 기계 — 열로 보는 행렬 곱, 늘리기·돌리기·밀기, 순서의 중요성, 역행렬과 행렬식, 행렬 암호까지 손으로 체험하는 앱">
+<style>
+:root{--bg:#151622;--card:#1c1e2e;--card2:#25283c;--fg:#f0f1fa;--mut:#a6a9c6;--line:#353956;
+--e1:#ff8a5c;--e2:#5fb3ff;--ok:#6fdc9a;--bad:#ff7d7d;--gold:#ffd166;--pur:#b79cff}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;line-height:1.55}
+[hidden]{display:none!important}
+.wrap{max-width:560px;margin:0 auto;padding:12px 14px 40px}
+h1{font-size:1.2rem;margin:6px 0}
+h1 small{display:block;font-size:.76rem;color:var(--mut);font-weight:400}
+.tabs{display:flex;gap:5px;margin:10px 0}
+.tabs button{flex:1;padding:9px 2px;border:1px solid var(--line);background:var(--card);color:var(--mut);border-radius:10px;font-size:.84rem;font-weight:600}
+.tabs button.on{background:#352a5a;color:#fff;border-color:var(--pur)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:10px 0}
+h2{font-size:1rem;margin:2px 0 8px}
+.note{font-size:.86rem;color:var(--mut);margin:8px 0 0}
+.note b{color:var(--fg)}
+.btn{padding:11px 14px;border-radius:12px;border:0;background:linear-gradient(135deg,#6a4fd0,#b79cff);color:#fff;font-weight:800;font-size:.95rem;flex:1}
+.btn.sec{background:var(--card2);border:1px solid var(--line);color:var(--fg);font-weight:700}
+.btn.sm{flex:none;padding:7px 11px;font-size:.82rem}
+.btn:disabled{opacity:.4}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row+.row{margin-top:8px}
+.pill{padding:7px 11px;border-radius:999px;border:1px solid var(--line);background:var(--card2);color:var(--fg);font-size:.84rem}
+.pill.on{border-color:var(--gold);background:#4a3e1a;color:#fff}
+canvas{display:block;width:100%;border-radius:12px;background:#10111a;touch-action:none}
+.say{background:#24204a;border-left:3px solid var(--pur);border-radius:8px;padding:9px 11px;font-size:.92rem;margin-top:10px}
+.say b{color:#fff}
+.say.q{border-left-color:#ff9b5c;background:#2e2118}
+.res{margin-top:10px;font-size:.92rem;border-radius:10px;padding:10px 12px}
+.res.g{background:#16352a;border:1px solid #2f7a52}
+.res.r{background:#3a1d1d;border:1px solid #8a3a3a}
+.res.y{background:#3a3218;border:1px solid #8a7a3a}
+.mono{font-family:ui-monospace,Menlo,Consolas,monospace}
+.mx{display:inline-grid;grid-template-columns:auto auto;gap:2px 14px;padding:4px 12px;border-left:2px solid var(--fg);border-right:2px solid var(--fg);border-radius:6px;font-family:"Times New Roman",serif;font-size:1.25rem;text-align:center;vertical-align:middle;font-variant-numeric:tabular-nums}
+.mx .c1{color:var(--e1)}.mx .c2{color:var(--e2)}
+.mxrow{display:flex;justify-content:center;align-items:center;gap:12px;margin-top:8px;flex-wrap:wrap;font-size:.9rem}
+.ent{display:grid;grid-template-columns:repeat(2,1fr);gap:6px 12px;margin-top:8px}
+.ent .sl{display:grid;grid-template-columns:20px 1fr 40px;gap:6px;align-items:center;font-size:.85rem;font-family:"Times New Roman",serif}
+.ent .sl input{width:100%}
+.ent .sl b{text-align:right;font-variant-numeric:tabular-nums;font-family:-apple-system,sans-serif}
+.sl2{display:grid;grid-template-columns:auto 1fr 52px;gap:8px;align-items:center;font-size:.86rem;margin-top:6px}
+.sl2 input{width:100%}
+.sl2 b{text-align:right;font-variant-numeric:tabular-nums}
+.stat{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px;text-align:center}
+.stat div{background:var(--card2);border-radius:10px;padding:7px 4px;font-size:.74rem;color:var(--mut)}
+.stat b{display:block;font-size:1.1rem;color:var(--fg);font-variant-numeric:tabular-nums}
+.opts{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.opts button{text-align:left;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card2);color:var(--fg);font-size:.9rem}
+.opts button.right{border-color:#6fdc9a;background:#16352a}
+.opts button.wrong{border-color:#ff7d7d;background:#3a1d1d}
+.q2m{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+.q2m button{padding:10px 4px;border-radius:12px;border:1px solid var(--line);background:var(--card2);color:var(--fg)}
+.q2m button.right{border-color:#6fdc9a;background:#16352a}.q2m button.wrong{border-color:#ff7d7d;background:#3a1d1d}
+.q2m .mx{font-size:1.05rem;gap:1px 10px;padding:2px 8px}
+input[type=text]{flex:1;min-width:0;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:#10111a;color:var(--fg);font-size:1rem;font-family:ui-monospace,Menlo,Consolas,monospace;letter-spacing:2px;text-transform:uppercase}
+.pairs{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.pairs div{display:grid;grid-template-columns:auto auto 1fr;gap:8px;align-items:center;background:var(--card2);border-radius:10px;padding:8px 10px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.86rem}
+.pairs .lt{font-weight:800;color:var(--gold);letter-spacing:2px}
+.big{font-size:1.25rem;font-weight:800;text-align:center;margin-top:10px;font-family:ui-monospace,Menlo,Consolas,monospace;letter-spacing:1px;word-break:break-all}
+.sort{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.sort button{padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--card2);color:var(--fg);font-size:.86rem}
+.sort button.o{border-color:#6fdc9a;background:#16352a}.sort button.x{border-color:#ff7d7d;background:#3a1d1d}
+.sum3{margin-top:12px;background:linear-gradient(135deg,#352a5a,#1d3358);border-radius:14px;padding:12px 14px}
+.sum3 ol{margin:4px 0;padding-left:20px;font-size:.92rem}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#000c;color:#fff;padding:10px 16px;border-radius:999px;font-size:.9rem;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9}
+.toast.on{opacity:1}
+footer{text-align:center;color:var(--mut);font-size:.78rem;margin-top:18px}
+footer a{color:var(--mut)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>⚙️ 행렬 변환 기계<small>행렬은 숫자 표가 아니라 공간을 통째로 움직이는 기계</small></h1>
+<div class="tabs">
+  <button class="on" data-tab="t1">① 기계</button>
+  <button data-tab="t2">② 순서</button>
+  <button data-tab="t3">③ 되돌리기</button>
+  <button data-tab="t4">④ 암호</button>
+</div>
+
+<!-- ① 기계 -->
+<section id="tab-t1">
+  <div class="card">
+    <h2>🔧 축이 어디로 가는가</h2>
+    <p class="note" style="margin-top:0">행렬의 <b style="color:#ff8a5c">첫째 열</b> = 가로 기본 벡터 (1, 0)이 옮겨 가는 곳, <b style="color:#5fb3ff">둘째 열</b> = 세로 기본 벡터 (0, 1)이 옮겨 가는 곳. 축만 알면 격자 전체와 🏠 집이 어떻게 움직이는지 보입니다.</p>
+    <div class="row" id="pre" style="margin-top:8px">
+      <button class="pill on" data-p="ex">예시 [2 1; 1 1]</button>
+      <button class="pill" data-p="sc">↔️ 늘리기</button>
+      <button class="pill" data-p="rot">🔄 돌리기</button>
+      <button class="pill" data-p="sh">🃏 밀기</button>
+      <button class="pill" data-p="flat">🥞 납작</button>
+      <button class="pill" data-p="free">✋ 직접</button>
+    </div>
+    <div id="preCtl"></div>
+    <canvas id="cv" style="margin-top:8px"></canvas>
+    <div class="mxrow" id="mxShow"></div>
+    <div class="stat"><div>행렬식 ad − bc<b id="det"></b></div><div>넓이 변화<b id="area"></b></div><div>되돌릴 수<b id="inv"></b></div></div>
+    <div class="row" style="margin-top:8px"><button class="btn" id="anim">▶ 변환 애니메이션</button></div>
+    <div id="mMsg"></div>
+  </div>
+  <div class="card">
+    <h2>🍳 행렬 곱을 열로 보기 — 열은 재료, 벡터는 조리법</h2>
+    <div class="sl2"><span>x₁ (첫째 열을 몇 번)</span><input type="range" id="x1" min="-3" max="3" step="0.5" value="2"><b id="x1v"></b></div>
+    <div class="sl2"><span>x₂ (둘째 열을 몇 번)</span><input type="range" id="x2" min="-3" max="3" step="0.5" value="3"><b id="x2v"></b></div>
+    <canvas id="cvc" style="margin-top:8px"></canvas>
+    <div class="say" id="colMsg"></div>
+  </div>
+</section>
+
+<!-- ② 순서 -->
+<section id="tab-t2" hidden>
+  <div class="card">
+    <h2>🔀 움직임을 이어 붙이면 — 순서가 중요</h2>
+    <p class="note" style="margin-top:0">두 변환: <b>🃏 밀기</b> [1 1; 0 1]과 <b>🔄 90° 돌리기</b> [0 −1; 1 0]. 행렬 두 개를 곱하면 두 변환을 차례로 한 것입니다. 벡터 <b>(1, 0)</b>과 🏠 집으로 비교해 보세요.</p>
+    <div class="row" style="margin-top:8px"><button class="pill on" data-o="sr">① 밀고 → 돌리기</button><button class="pill" data-o="rs">② 돌리고 → 밀기</button></div>
+    <canvas id="cv2" style="margin-top:8px"></canvas>
+    <div class="row" style="margin-top:8px"><button class="btn" id="anim2">▶ 차례로 해 보기</button></div>
+    <div id="oMsg"></div>
+  </div>
+  <div class="card">
+    <h2>❓ 퀴즈 ① 순서를 바꾸면</h2>
+    <div class="say q">사진을 <b>돌린 다음 미는 것</b>과, <b>민 다음 돌리는 것</b>의 결과는?</div>
+    <div class="opts" id="q1"><button data-a="0">항상 같다</button><button data-a="1">다를 수 있다</button><button data-a="2">돌리기만 남는다</button></div>
+    <div id="q1Msg"></div>
+  </div>
+</section>
+
+<!-- ③ 되돌리기 -->
+<section id="tab-t3" hidden>
+  <div class="card">
+    <h2>🔑 되돌리는 열쇠 — 역행렬</h2>
+    <p class="note" style="margin-top:0">A에 곱해서 공간을 그대로 두는 <b>단위행렬</b> I가 되게 하는 행렬이 역행렬 A⁻¹. 5 × ⅕ = 1 같은 <b>역수</b>입니다. 2×2 공식의 분모가 <b>행렬식 ad − bc</b> — 0이면 안 되겠지요.</p>
+    <div class="row" id="invSel" style="margin-top:8px"><button class="pill on" data-i="ex">[2 1; 1 1]</button><button class="pill" data-i="rot">30° 회전</button><button class="pill" data-i="sc3">3배 확대</button><button class="pill" data-i="flat">[2 4; 1 2]</button></div>
+    <div class="mxrow" id="invShow"></div>
+    <canvas id="cv3" style="margin-top:8px"></canvas>
+    <div class="row" style="margin-top:8px"><button class="btn" id="go3">▶ 변환</button><button class="btn sec" id="back3">↩️ 역행렬로 되돌리기</button></div>
+    <div id="iMsg"></div>
+  </div>
+  <div class="card">
+    <h2>❓ 퀴즈 ② 되돌릴 수 없는 행렬은?</h2>
+    <div class="q2m" id="q2"></div>
+    <div id="q2Msg"></div>
+  </div>
+  <div class="card">
+    <h2>🧦👟 되돌릴 때는 거꾸로</h2>
+    <div class="say">변환 두 개를 이어서 했다면 <b>(AB)⁻¹ = B⁻¹ A⁻¹</b>. 양말을 신고 신발을 신었다면, 벗을 때는 <b>신발 먼저</b>! 마지막에 한 일부터 먼저 풉니다. (② 순서 탭의 밀기·돌리기도 되돌릴 땐 반대 순서로)</div>
+  </div>
+</section>
+
+<!-- ④ 암호 -->
+<section id="tab-t4" hidden>
+  <div class="card">
+    <h2>🔐 행렬로 만드는 암호</h2>
+    <p class="note" style="margin-top:0">알파벳을 순서 번호(A=1 … Z=26)로 바꾸고 두 글자씩 묶어 <b>열쇠 행렬</b>을 곱합니다. 받는 사람은 <b>역행렬</b>로 되살립니다. (글자 수가 홀수면 끝에 X를 붙입니다)</p>
+    <div class="row" style="margin-top:8px"><input type="text" id="word" value="DATA" maxlength="12"><button class="btn sm" id="enc">🔒 암호화</button></div>
+    <div class="row" style="margin-top:8px" id="keySel"><span class="note" style="margin:0">열쇠</span><button class="pill on" data-k="0">[2 1; 1 1]</button><button class="pill" data-k="1">[3 2; 1 1]</button><button class="pill" data-k="2">🚫 [2 4; 1 2]</button></div>
+    <div class="pairs" id="pairs"></div>
+    <div class="big" id="cipher"></div>
+    <div class="row" style="margin-top:8px"><button class="btn sec" id="dec" disabled>🔓 역행렬로 되살리기</button></div>
+    <div id="eMsg"></div>
+  </div>
+  <div class="card">
+    <h2>⚡ 한꺼번에 계산하면 빠르다</h2>
+    <p class="note" style="margin-top:0">점 10만 개를 30° 돌리기(대본의 측정 예시, <b>환경에 따라 다름</b>): 파이썬 반복문으로 하나씩 약 <b>18 ms</b>, 넘파이로 10만 개를 한 행렬로 묶어 한 번에 곱하면 약 <b>0.7 ms</b> — 스무 배 넘게 빠름. 데이터를 행렬로 묶어 통째로 계산하는 것이 인공지능의 기본 방식입니다.</p>
+  </div>
+  <div class="card">
+    <h2>🤔 생각해 볼 질문 — 행렬 하나로 될까?</h2>
+    <p class="note" style="margin-top:0">사진 편집 기능을 눌러 <b>⭕ 행렬 하나로 된다 / ❌ 안 된다</b>를 예측해 보세요. 기준: <b>직선이 직선으로 남는가</b> (원점을 중심으로 할 때)</p>
+    <div class="sort" id="sort"></div>
+    <div id="sortMsg"></div>
+  </div>
+  <div class="card">
+    <h2>📌 세 줄 정리</h2>
+    <div class="sum3"><ol>
+      <li>행렬의 <b>열은 축이 옮겨 가는 곳</b>이고, 행렬 곱은 공간 전체를 움직이는 변환이다.</li>
+      <li>변환은 <b>순서가 중요</b>하고, 되돌릴 때는 역행렬을 <b>거꾸로</b> 곱한다.</li>
+      <li><b>행렬식이 0</b>이면 공간이 납작해져 되돌릴 수 없다.</li>
+    </ol></div>
+  </div>
+</section>
+
+<footer>© 2026 정필 수심명 · <a href="https://blog.naver.com/omyman" target="_blank" rel="noopener">blog.naver.com/omyman</a><br>선형대수 03 부록 · 인터넷 없이 동작</footer>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(()=>{
+'use strict';
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('on'),1800);}
+const vib=n=>{try{navigator.vibrate&&navigator.vibrate(n);}catch(e){}};
+function prep(cv,ratio){const dpr=Math.min(2,window.devicePixelRatio||1),w=cv.clientWidth||320,h=Math.round(w*ratio);
+  cv.width=w*dpr;cv.height=h*dpr;cv.style.height=h+'px';const c=cv.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);return{c,w,h};}
+function T(c,s,x,y,col,size,al,bl,wt){c.fillStyle=col;c.font=`${wt||''} ${size||12}px -apple-system,"Malgun Gothic",sans-serif`;c.textAlign=al||'center';c.textBaseline=bl||'middle';c.fillText(s,x,y);}
+const nf=v=>{const r=Math.round(v*100)/100;return (Object.is(r,-0)?0:r).toString().replace('-','−');};
+const mul=(M,v)=>[M[0]*v[0]+M[1]*v[1],M[2]*v[0]+M[3]*v[1]]; // M = [a,b,c,d] (행 우선)
+const mm=(A,B)=>[A[0]*B[0]+A[1]*B[2],A[0]*B[1]+A[1]*B[3],A[2]*B[0]+A[3]*B[2],A[2]*B[1]+A[3]*B[3]];
+const det=M=>M[0]*M[3]-M[1]*M[2];
+const lerp=(A,B,t)=>A.map((v,i)=>v+(B[i]-v)*t);
+const I=[1,0,0,1];
+const mxHTML=(M,lab)=>`${lab?`<span>${lab}</span>`:''}<span class="mx"><span class="c1">${nf(M[0])}</span><span class="c2">${nf(M[1])}</span><span class="c1">${nf(M[2])}</span><span class="c2">${nf(M[3])}</span></span>`;
+const HOUSE=[[0,0],[1,0],[1,1],[0.5,1.5],[0,1]],DOOR=[[0.15,0],[0.4,0],[0.4,0.55],[0.15,0.55]];
+/* 공통 그리기: 변환 M을 적용한 격자·축·집 */
+function drawSpace(cv,M,opt){opt=opt||{};const {c,w,h}=prep(cv,opt.ratio||0.8);c.clearRect(0,0,w,h);const sc=opt.scale||w/10,ox=w/2+(opt.dx||0)*sc,oy=h/2+(opt.dy||0)*sc;
+  const P=v=>{const r=mul(M,v);return[ox+r[0]*sc,oy-r[1]*sc];};
+  // 원래 격자(희미)
+  c.strokeStyle='#1f2234';c.lineWidth=1;for(let k=-12;k<=12;k++){c.beginPath();c.moveTo(ox+k*sc,0);c.lineTo(ox+k*sc,h);c.stroke();c.beginPath();c.moveTo(0,oy-k*sc);c.lineTo(w,oy-k*sc);c.stroke();}
+  // 변환된 격자
+  c.strokeStyle='#3a3f66';c.lineWidth=1;for(let k=-8;k<=8;k++){let a=P([k,-8]),b=P([k,8]);c.beginPath();c.moveTo(...a);c.lineTo(...b);c.stroke();a=P([-8,k]);b=P([8,k]);c.beginPath();c.moveTo(...a);c.lineTo(...b);c.stroke();}
+  // 단위 정사각형
+  const sq=[[0,0],[1,0],[1,1],[0,1]].map(P);c.beginPath();sq.forEach((p,i)=>i?c.lineTo(...p):c.moveTo(...p));c.closePath();c.fillStyle='rgba(183,156,255,.18)';c.fill();
+  // 집
+  if(opt.house!==false){const hs=HOUSE.map(v=>P([v[0]+.2,v[1]+.2]));c.beginPath();hs.forEach((p,i)=>i?c.lineTo(...p):c.moveTo(...p));c.closePath();c.fillStyle='rgba(255,209,102,.25)';c.fill();c.strokeStyle='#ffd166';c.lineWidth=2;c.stroke();
+    const ds=DOOR.map(v=>P([v[0]+.2,v[1]+.2]));c.beginPath();ds.forEach((p,i)=>i?c.lineTo(...p):c.moveTo(...p));c.closePath();c.fillStyle='#b0754f';c.fill();}
+  // 축 화살표
+  const arrow=(v,col,lab)=>{const [x0,y0]=P([0,0]),[x1,y1]=P(v);c.strokeStyle=col;c.fillStyle=col;c.lineWidth=3;c.beginPath();c.moveTo(x0,y0);c.lineTo(x1,y1);c.stroke();const an=Math.atan2(y1-y0,x1-x0);
+    if(Math.hypot(x1-x0,y1-y0)>4){c.beginPath();c.moveTo(x1,y1);c.lineTo(x1-10*Math.cos(an-.4),y1-10*Math.sin(an-.4));c.lineTo(x1-10*Math.cos(an+.4),y1-10*Math.sin(an+.4));c.closePath();c.fill();}
+    if(lab)T(c,lab,x1+12*Math.cos(an),y1+12*Math.sin(an),col,11,'center','middle','bold');};
+  if(opt.axes!==false){arrow([1,0],'#ff8a5c',opt.axLab?`(${nf(M[0])}, ${nf(M[2])})`:'');arrow([0,1],'#5fb3ff',opt.axLab?`(${nf(M[1])}, ${nf(M[3])})`:'');}
+  if(opt.pts)opt.pts.forEach(([v,col,lab])=>{const p=P(v);c.beginPath();c.arc(p[0],p[1],6,0,7);c.fillStyle=col;c.fill();if(lab)T(c,lab,p[0]+8,p[1]-12,col,11,'left','middle','bold');});
+  c.beginPath();c.arc(ox,oy,3,0,7);c.fillStyle='#fff';c.fill();
+  return{c,w,h,sc,ox,oy,P};}
+
+/* ===== ① 기계 ===== */
+let pre='ex',M=[2,1,1,1],par={k:2,ky:2,th:90,s:1,a:2,b:1,c:1,d:1},cur=M.slice(),anim=null;
+function matFromPre(){switch(pre){case'ex':return[2,1,1,1];case'sc':return[par.k,0,0,par.ky];case'rot':{const t=par.th*Math.PI/180;return[Math.cos(t),-Math.sin(t),Math.sin(t),Math.cos(t)];}
+  case'sh':return[1,par.s,0,1];case'flat':return[2,4,1,2];default:return[par.a,par.b,par.c,par.d];}}
+function ctlHTML(){const S=(id,lab,min,max,st,v)=>`<div class="sl2"><span>${lab}</span><input type="range" id="${id}" min="${min}" max="${max}" step="${st}" value="${v}"><b id="${id}v"></b></div>`;
+  if(pre==='sc')return S('pk','가로 배율',-2,3,0.25,par.k)+S('pky','세로 배율',-2,3,0.25,par.ky);
+  if(pre==='rot')return S('pth','각도 θ(°)',-180,180,15,par.th);
+  if(pre==='sh')return S('ps','미는 정도',-2,2,0.25,par.s);
+  if(pre==='free')return `<div class="ent">${[['a','pa',par.a],['b','pb',par.b],['c','pc',par.c],['d','pd',par.d]].map(([l,id,v])=>`<div class="sl"><span>${l}</span><input type="range" id="${id}" min="-3" max="3" step="0.25" value="${v}"><b id="${id}v"></b></div>`).join('')}</div>`;
+  return'';}
+function bindCtl(){const map={pk:'k',pky:'ky',pth:'th',ps:'s',pa:'a',pb:'b',pc:'c',pd:'d'};
+  Object.keys(map).forEach(id=>{const el=$('#'+id);if(!el)return;const upd=()=>{par[map[id]]=+el.value;$('#'+id+'v').textContent=el.value;M=matFromPre();cur=M.slice();render1();};el.addEventListener('input',upd);$('#'+id+'v').textContent=el.value;});}
+function render1(){drawSpace($('#cv'),cur,{axLab:true});const d=det(M);
+  $('#mxShow').innerHTML=mxHTML(M,'A =')+`<span style="color:#a6a9c6">열: <b style="color:#ff8a5c">(${nf(M[0])}, ${nf(M[2])})</b> · <b style="color:#5fb3ff">(${nf(M[1])}, ${nf(M[3])})</b></span>`;
+  $('#det').textContent=nf(d);$('#area').textContent=Math.abs(d)<1e-9?'0 (납작)':nf(Math.abs(d))+'배'+(d<0?' (뒤집힘)':'');$('#inv').innerHTML=Math.abs(d)<1e-9?'<span style="color:#ff7d7d">✕ 불가</span>':'<span style="color:#6fdc9a">⭕ 가능</span>';
+  const msg={ex:'가로축 (1,0)은 <b style="color:#ff8a5c">(2,1)</b>로, 세로축 (0,1)은 <b style="color:#5fb3ff">(1,1)</b>로 → 바둑판이 <b>비스듬한 평행사변형 격자</b>로. 격자 위 모든 점이 함께 따라 움직입니다. 행렬식 2×1 − 1×1 = <b>1</b> → 넓이 그대로.',
+    sc:'대각선에만 수가 있으면 <b>늘리기·줄이기</b>. 가로·세로에 다른 수를 넣으면 한쪽만 늘어납니다 — 사진 크기 조절! (음수를 넣으면 뒤집히고, 행렬식 부호가 바뀝니다)',
+    rot:`코사인·사인으로 만든 <b>회전 행렬</b>은 원점을 중심으로 시계 반대 방향으로 돌립니다. 90°면 (1,0) → (0,1). 넓이는 그대로(행렬식 1). AI 학습에서 사진을 조금씩 돌려 데이터를 늘릴 때 씁니다 — 기울여도 고양이는 고양이!`,
+    sh:'🃏 <b>밀기(전단)</b>: 한 축은 그대로, 다른 축 방향으로 비스듬히. 카드 묶음처럼 바닥은 그대로이고 위로 갈수록 더 밀립니다. <b>넓이는 그대로</b>(행렬식 1) — 비스듬히 찍힌 문서 사진을 펴는 데도 씁니다.',
+    flat:'🥞 두 열 (2,1)과 (4,2)가 <b>같은 방향</b> → 축 두 개가 한 줄로 겹쳐 평면 전체가 <b>직선 하나로 납작</b>하게! 행렬식 2×2 − 4×1 = <b>0</b>. 정보가 눌려 사라져 되돌릴 수 없습니다(③에서 확인).',
+    free:'a, b, c, d를 직접 바꿔 보세요. 어떤 값이든 <b>직선은 직선으로, 원점은 제자리, 격자 간격은 고르게</b> — 이것이 선형 변환의 약속입니다.'}[pre];
+  $('#mMsg').innerHTML=`<div class="say">${msg}</div>`;}
+function setPre(p){pre=p;$$('#pre .pill').forEach(x=>x.classList.toggle('on',x.dataset.p===p));$('#preCtl').innerHTML=ctlHTML();bindCtl();M=matFromPre();cur=M.slice();render1();}
+$$('#pre .pill').forEach(b=>b.onclick=()=>setPre(b.dataset.p));
+$('#anim').onclick=()=>{cancelAnimationFrame(anim);const t0=performance.now();(function f(){const t=Math.min(1,(performance.now()-t0)/1400),e=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;cur=lerp(I,M,e);render1();if(t<1)anim=requestAnimationFrame(f);})();};
+function renderCol(){const x1=+$('#x1').value,x2=+$('#x2').value;$('#x1v').textContent=x1;$('#x2v').textContent=x2;
+  const {c,w,h}=prep($('#cvc'),0.7);c.clearRect(0,0,w,h);const sc=w/16,ox=w*0.3,oy=h*0.75,P=v=>[ox+v[0]*sc,oy-v[1]*sc];
+  c.strokeStyle='#1f2234';for(let k=-20;k<=20;k++){c.beginPath();c.moveTo(ox+k*sc,0);c.lineTo(ox+k*sc,h);c.stroke();c.beginPath();c.moveTo(0,oy-k*sc);c.lineTo(w,oy-k*sc);c.stroke();}
+  c.strokeStyle='#353956';c.lineWidth=1.5;c.beginPath();c.moveTo(0,oy);c.lineTo(w,oy);c.moveTo(ox,0);c.lineTo(ox,h);c.stroke();
+  const a1=[M[0],M[2]],a2=[M[1],M[3]];let p=[0,0];
+  const arr=(from,to,col,wd)=>{const [x0,y0]=P(from),[x1_,y1_]=P(to);c.strokeStyle=col;c.fillStyle=col;c.lineWidth=wd;c.beginPath();c.moveTo(x0,y0);c.lineTo(x1_,y1_);c.stroke();const an=Math.atan2(y1_-y0,x1_-x0);if(Math.hypot(x1_-x0,y1_-y0)>5){c.beginPath();c.moveTo(x1_,y1_);c.lineTo(x1_-9*Math.cos(an-.4),y1_-9*Math.sin(an-.4));c.lineTo(x1_-9*Math.cos(an+.4),y1_-9*Math.sin(an+.4));c.closePath();c.fill();}};
+  const s1=[a1[0]*x1,a1[1]*x1];arr([0,0],s1,'#ff8a5c',3);const r=[s1[0]+a2[0]*x2,s1[1]+a2[1]*x2];arr(s1,r,'#5fb3ff',3);
+  arr([0,0],r,'#ffd166',2);const q=P(r);c.beginPath();c.arc(q[0],q[1],6,0,7);c.fillStyle='#ffd166';c.fill();T(c,`(${nf(r[0])}, ${nf(r[1])})`,q[0]+8,q[1]-12,'#ffd166',12,'left','middle','bold');
+  $('#colMsg').innerHTML=`A·(${nf(x1)}, ${nf(x2)}) = <b>${nf(x1)}</b> × <span style="color:#ff8a5c">(${nf(a1[0])}, ${nf(a1[1])})</span> + <b>${nf(x2)}</b> × <span style="color:#5fb3ff">(${nf(a2[0])}, ${nf(a2[1])})</span> = <b style="color:#ffd166">(${nf(r[0])}, ${nf(r[1])})</b><br><span style="color:#a6a9c6;font-size:.84rem">행과 열을 곱해 더하는 계산과 결과는 같지만, "열을 몇 번씩 섞는다"로 보면 무슨 일이 일어나는지 보입니다. (위에서 고른 행렬 A를 씁니다)</span>`;}
+['x1','x2'].forEach(id=>$('#'+id).addEventListener('input',renderCol));
+
+/* ===== ② 순서 ===== */
+const SH=[1,1,0,1],RO=[0,-1,1,0];let ord='sr',a2=null;
+let cur2=[1,0,0,1],stage2='';
+function render2(M2,stage){cur2=M2;stage2=stage||'';const pts=[[[1,0],'#6fdc9a','']];const o=drawSpace($('#cv2'),M2,{ratio:0.8,pts,axes:false});
+  const r=mul(M2,[1,0]);const p=o.P([1,0]);T(o.c,`(1,0) → (${nf(r[0])}, ${nf(r[1])})`,p[0]+8,p[1]+14,'#6fdc9a',12,'left','middle','bold');
+  if(stage)T(o.c,stage,10,14,'#ffd166',13,'left','middle','bold');}
+function final(o){return o==='sr'?mm(RO,SH):mm(SH,RO);}
+$$('[data-o]').forEach(b=>b.onclick=()=>{$$('[data-o]').forEach(x=>x.classList.toggle('on',x===b));ord=b.dataset.o;render2(I);$('#oMsg').innerHTML='';});
+$('#anim2').onclick=()=>{cancelAnimationFrame(a2);const first=ord==='sr'?SH:RO,second=ord==='sr'?RO:SH,F=final(ord);const t0=performance.now();
+  (function f(){const t=(performance.now()-t0)/1200;if(t<1){render2(lerp(I,first,t),ord==='sr'?'1단계: 🃏 밀기':'1단계: 🔄 돌리기');a2=requestAnimationFrame(f);}
+    else if(t<1.3){render2(first,ord==='sr'?'1단계: 🃏 밀기 끝':'1단계: 🔄 돌리기 끝');a2=requestAnimationFrame(f);}
+    else if(t<2.3){render2(mm(lerp(I,second,t-1.3),first),ord==='sr'?'2단계: 🔄 돌리기':'2단계: 🃏 밀기');a2=requestAnimationFrame(f);}
+    else{render2(F,'완료');const r=mul(F,[1,0]),o2=final(ord==='sr'?'rs':'sr'),r2=mul(o2,[1,0]);
+      $('#oMsg').innerHTML=`<div class="say">${ord==='sr'?'① 밀고 → 돌리기':'② 돌리고 → 밀기'}: (1, 0) → <b>(${nf(r[0])}, ${nf(r[1])})</b>. 합친 행렬 = ${mxHTML(F)}<br>반대 순서였다면 → <b>(${nf(r2[0])}, ${nf(r2[1])})</b>. ${ord==='sr'?'다른 버튼도 눌러 보세요!':'결과가 다르지요?'} 그래서 행렬 곱은 일반적으로 <b>AB ≠ BA</b>. (행렬은 오른쪽부터 적용: "밀고 돌리기" = 돌리기 × 밀기)</div>`;vib(30);}})();};
+$$('#q1 button').forEach(b=>b.onclick=()=>{const ok=b.dataset.a==='1';$$('#q1 button').forEach(x=>x.className=x.dataset.a==='1'?'right':x===b?'wrong':'');vib(ok?[30,40,60]:80);
+  $('#q1Msg').innerHTML=`<div class="res ${ok?'g':'r'}">${ok?'🎉 정답!':'아쉽네요.'} 정답은 <b>다를 수 있다</b>. (1, 0)을 밀고 돌리면 (0, 1), 돌리고 밀면 (1, 1). 늘 다른 건 아닙니다 — 두 번의 회전처럼 순서를 바꿔도 같은 경우도 있지만, <b>같다고 가정하면 안 되고</b> 적용 순서를 꼭 지켜야 합니다.</div>`;});
+
+/* ===== ③ 역행렬 ===== */
+const IM={ex:[2,1,1,1],rot:[Math.cos(Math.PI/6),-Math.sin(Math.PI/6),Math.sin(Math.PI/6),Math.cos(Math.PI/6)],sc3:[3,0,0,3],flat:[2,4,1,2]};
+let ik='ex',state3=I.slice(),a3=null;
+const invOf=A=>{const d=det(A);return Math.abs(d)<1e-9?null:[A[3]/d,-A[1]/d,-A[2]/d,A[0]/d];};
+const fracStr=v=>{for(const den of [1,2,3,4,5,6,9]){const n=v*den;if(Math.abs(n-Math.round(n))<1e-9){const r=Math.round(n);return den===1?String(r).replace('-','−'):`${r<0?'−':''}${Math.abs(r)}/${den}`;}}return nf(v);};
+function render3(){const A=IM[ik],inv=invOf(A),d=det(A);
+  $('#invShow').innerHTML=mxHTML(A,'A =')+`<span>det = <b>${ik==='rot'?'1':fracStr(d)}</b></span>`+(inv?`<span class="mx" style="font-size:1.05rem"><span class="c1">${ik==='rot'?nf(inv[0]):fracStr(inv[0])}</span><span class="c2">${ik==='rot'?nf(inv[1]):fracStr(inv[1])}</span><span class="c1">${ik==='rot'?nf(inv[2]):fracStr(inv[2])}</span><span class="c2">${ik==='rot'?nf(inv[3]):fracStr(inv[3])}</span></span><span>= A⁻¹</span>`:'<span style="color:#ff7d7d;font-weight:800">A⁻¹ 없음</span>');
+  const pts=ik==='flat'?[[[2,0],'#6fdc9a','(2,0)'],[[0,1],'#ff7da8','(0,1)']]:null;
+  drawSpace($('#cv3'),state3,{ratio:.8,scale:prep($('#cv3'),.8).w/(ik==='sc3'?16:10),pts,axLab:true});}
+$$('#invSel .pill').forEach(b=>b.onclick=()=>{$$('#invSel .pill').forEach(x=>x.classList.toggle('on',x===b));ik=b.dataset.i;state3=I.slice();render3();$('#iMsg').innerHTML='';$('#back3').disabled=false;});
+function animTo(from,to,done){cancelAnimationFrame(a3);const t0=performance.now();(function f(){const t=Math.min(1,(performance.now()-t0)/1200);state3=lerp(from,to,t);render3();if(t<1)a3=requestAnimationFrame(f);else done&&done();})();}
+$('#go3').onclick=()=>{animTo(I,IM[ik],()=>{const A=IM[ik];let m;
+  if(ik==='flat')m='<div class="res r">🥞 평면이 직선 하나로 납작! 서로 다른 점 <b style="color:#6fdc9a">(2, 0)</b>과 <b style="color:#ff7da8">(0, 1)</b>이 <b>둘 다 (4, 2)</b>로 갔습니다. 같은 곳에 모인 두 점을 다시 나눌 방법이 없으니 — <b>특이 행렬</b>, 어떤 행렬로도 되돌릴 수 없습니다.</div>';
+  else m=`<div class="say">변환 완료. 행렬식 ${ik==='sc3'?'9 → 넓이 9배(3배 × 3배)':ik==='rot'?'1 → 회전은 넓이 그대로':'1 → 넓이 그대로'}. 이제 <b>↩️ 역행렬로 되돌리기</b>를 눌러 보세요.</div>`;$('#iMsg').innerHTML=m;});};
+$('#back3').onclick=()=>{const inv=invOf(IM[ik]);if(!inv){vib(80);$('#iMsg').innerHTML='<div class="res r">⛔ 행렬식이 0이라 공식의 분모가 0 — 역행렬이 없습니다. 눌려서 사라진 정보는 돌아오지 않습니다.</div>';return;}
+  const from=state3.slice();animTo(from,mm(inv,from),()=>{const m={ex:'[1 −1; −1 2]를 곱했더니 원래 격자로! A⁻¹A = I (단위행렬: 대각선 1, 나머지 0 — 공간을 그대로 둠).',rot:'회전의 역행렬 = <b>같은 각도만큼 반대 방향</b>(−30°)으로 도는 행렬.',sc3:'3배로 키웠으니 <b>⅓배</b>로 줄이면 되돌아옵니다.'}[ik];
+    $('#iMsg').innerHTML=`<div class="res g">✅ 원래대로! ${m}</div>`;vib([30,40,60]);});};
+const Q2=[[2,1,1,1],[2,4,1,2],[3,0,0,3]];
+$('#q2').innerHTML=Q2.map((A,i)=>`<button data-i="${i}">${mxHTML(A)}</button>`).join('');
+$$('#q2 button').forEach(b=>b.onclick=()=>{const ok=b.dataset.i==='1';$$('#q2 button').forEach(x=>x.className=x.dataset.i==='1'?'right':x===b?'wrong':'');vib(ok?[30,40,60]:80);
+  $('#q2Msg').innerHTML=`<div class="res ${ok?'g':'r'}">${ok?'🎉 정답!':'아쉽네요.'} 정답은 <b>[2 4; 1 2]</b>. 행렬식 2×2 − 4×1 = <b>0</b> → 공간이 납작해지고 역행렬이 없습니다.<br>[2 1; 1 1]은 행렬식 <b>1</b>, [3 0; 0 3]은 <b>9</b>(모든 것을 3배 → 넓이 9배, ⅓배로 줄이면 되돌아옴).</div>`;});
+
+/* ===== ④ 암호 ===== */
+const KEYS=[[2,1,1,1],[3,2,1,1],[2,4,1,2]];let kk=0,lastC=null;
+$$('#keySel .pill').forEach(b=>b.onclick=()=>{$$('#keySel .pill').forEach(x=>x.classList.toggle('on',x===b));kk=+b.dataset.k;encode();});
+function encode(){let w=$('#word').value.toUpperCase().replace(/[^A-Z]/g,'');if(!w){w='DATA';$('#word').value=w;}if(w.length%2)w+='X';
+  const K=KEYS[kk],nums=[...w].map(ch=>ch.charCodeAt(0)-64),pairs=[];for(let i=0;i<nums.length;i+=2)pairs.push([nums[i],nums[i+1]]);
+  const enc=pairs.map(p=>mul(K,p));lastC={w,pairs,enc,K};
+  $('#pairs').innerHTML=pairs.map((p,i)=>`<div><span class="lt">${w[2*i]}${w[2*i+1]}</span><span>(${p[0]}, ${p[1]})</span><span>× 열쇠 → <b style="color:#b79cff">(${enc[i][0]}, ${enc[i][1]})</b></span></div>`).join('');
+  $('#cipher').innerHTML=`🔒 ${enc.map(e=>e.join(' ')).join('  ')}`;$('#dec').disabled=false;
+  let m=`<div class="say">원래 단어를 모르는 사람에게는 숫자 <b>${enc.map(e=>e.join(', ')).join(', ')}</b>만 보입니다.${kk===0&&w==='DATA'?' (영상과 같은 결과: 9, 5, 41, 21)':''}</div>`;
+  if(kk===2){const twin=pairs.map(p=>[p[0]+2*1,p[1]-1]);m+=`<div class="res r">⚠️ 이 열쇠는 행렬식이 <b>0</b>! 예를 들어 두 쌍 (${pairs[0][0]}, ${pairs[0][1]}), (${twin[0][0]}, ${twin[0][1]})이 둘 다 (${enc[0][0]}, ${enc[0][1]})로 바뀝니다. 받는 사람이 원래 글자를 알 수 없겠지요?</div>`;}
+  $('#eMsg').innerHTML=m;}
+$('#enc').onclick=()=>{encode();vib(20);};$('#word').addEventListener('keydown',e=>{if(e.key==='Enter')encode();});
+$('#dec').onclick=()=>{if(!lastC)return;const inv=invOf(lastC.K);if(!inv){vib(80);$('#eMsg').insertAdjacentHTML('beforeend','<div class="res r">⛔ 역행렬이 없어 되살릴 수 없습니다. 암호 열쇠는 반드시 <b>행렬식이 0이 아닌</b> 행렬이어야 합니다.</div>');return;}
+  const dec=lastC.enc.map(e=>mul(inv,e).map(v=>Math.round(v)));const word=dec.flat().map(n=>String.fromCharCode(64+n)).join('');
+  $('#pairs').innerHTML=lastC.enc.map((e,i)=>`<div><span>(${e[0]}, ${e[1]})</span><span>× 역행렬</span><span>→ (${dec[i][0]}, ${dec[i][1]}) = <span class="lt">${String.fromCharCode(64+dec[i][0])}${String.fromCharCode(64+dec[i][1])}</span></span></div>`).join('');
+  $('#cipher').innerHTML=`🔓 ${word}`;$('#eMsg').innerHTML=`<div class="res g">✅ 역행렬 ${mxHTML(inv.map(v=>Math.round(v)))} 를 곱해 원래 단어 <b>${word}</b>가 돌아왔습니다! (행렬식이 1이라 역행렬도 정수 — 깔끔하게 되살아납니다)</div>`;vib([30,40,60]);};
+const SORT=[['🔍 크기 조절',1],['🔄 회전',1],['↔️ 좌우 반전',1],['🃏 기울이기',1],['🌊 물결 효과',0],['🔮 볼록 렌즈(어안)',0],['🌀 소용돌이',0]];
+$('#sort').innerHTML=SORT.map((s,i)=>`<button data-i="${i}">${s[0]}</button>`).join('');let sortN=0;
+$$('#sort button').forEach(b=>b.onclick=()=>{if(b.classList.length)return;const s=SORT[+b.dataset.i];b.classList.add(s[1]?'o':'x');b.textContent+=s[1]?' ⭕':' ❌';sortN++;vib(20);
+  if(sortN===SORT.length)$('#sortMsg').innerHTML='<div class="say">⭕ 크기·회전·반전·기울이기는 직선이 직선으로 남으니 행렬 하나로! ❌ 물결·볼록 렌즈·소용돌이는 직선을 <b>휘게</b> 만드니 선형 변환이 아닙니다. 기준은 <b>"직선이 직선으로 남는가"</b>.</div>';});
+
+/* ===== 탭 ===== */
+function show(t){$$('.tabs button').forEach(x=>x.classList.toggle('on',x.dataset.tab===t));['t1','t2','t3','t4'].forEach(k=>$('#tab-'+k).hidden=k!==t);
+  if(t==='t1'){render1();renderCol();}if(t==='t2')render2(I);if(t==='t3')render3();window.scrollTo(0,0);}
+$$('.tabs button').forEach(b=>b.onclick=()=>show(b.dataset.tab));
+window.addEventListener('resize',()=>{if(!$('#tab-t1').hidden){render1();renderCol();}if(!$('#tab-t2').hidden)render2(cur2,stage2);if(!$('#tab-t3').hidden)render3();});
+setPre('ex');renderCol();encode();
+})();
+</script>
+</body>
+</html>
